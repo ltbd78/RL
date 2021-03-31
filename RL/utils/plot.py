@@ -13,8 +13,8 @@ def get_ma(x, ma_len):
     return ma
 
 
-def plot(log_dir, ep_avg, ma_len, verbose, lim=None):
-    fnames = sorted(glob(log_dir + '*.pkl'))
+def plot(pkl_dir, ep_avg, ma_len, verbose, lim=None):
+    fnames = sorted(glob(pkl_dir + '*.pkl'))
     n = len(fnames)
     
     try:
@@ -36,10 +36,10 @@ def plot(log_dir, ep_avg, ma_len, verbose, lim=None):
                 rs = []
                 max_r = 0
                 min_r = 0
-                for e in log['episodes']:
-                    r = e['sum_reward']
+                for ep_info in log['episodes']:
+                    r = ep_info['sum_reward']
                     if ep_avg:
-                        r = r/(e['t'])
+                        r = r/(ep_info['t_ep'])
                     rs.append(r)
                     if r > max_r:
                         max_r = r
@@ -56,8 +56,8 @@ def plot(log_dir, ep_avg, ma_len, verbose, lim=None):
                 else:
                     y_lab = 'Sum Reward'
                 
-                ax[i, j].scatter(x=range(len(rs)), y=rs, s=1)
-                ax[i, j].plot(ma, color='red', label=str(ma_len)+'-MA')
+                ax[i, j].scatter(range(len(rs)), rs, s=1)
+                ax[i, j].plot(range(ma_len, len(rs)), ma, color='red', label=str(ma_len)+'-MA')
                 ax[i, j].set_title(fnames[k].split('/')[-1])
                 ax[i, j].set_xlabel('Episode')
                 ax[i, j].set_ylim(min_r-.1*abs(min_r), max_r+.1*abs(max_r))

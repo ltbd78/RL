@@ -4,19 +4,19 @@ import torch.nn.functional as F
 
 
 class ActorCriticNet(nn.Module):
-    def __init__(self, state_dim, action_dim, hidden_dim, decoupled, activation, discrete):
+    def __init__(self, state_dim, action_dim, hidden_dim, shared_network, activation, discrete):
         super(ActorCriticNet, self).__init__()
-        self.decoupled = decoupled
+        self.shared_network = shared_network
         self.activation = activation
         self.discrete = discrete
         
-        if self.decoupled:
-            self.actor1 = nn.Linear(state_dim, hidden_dim)
-            self.critic1 = nn.Linear(state_dim, hidden_dim)
-        else:
+        if self.shared_network:
             self.shared = nn.Linear(state_dim, hidden_dim)
             self.actor1 = nn.Linear(hidden_dim, hidden_dim)
             self.critic1 = nn.Linear(hidden_dim, hidden_dim)
+        else:
+            self.actor1 = nn.Linear(state_dim, hidden_dim)
+            self.critic1 = nn.Linear(state_dim, hidden_dim)
 
             
         self.actor2 = nn.Linear(hidden_dim, hidden_dim)
@@ -32,13 +32,14 @@ class ActorCriticNet(nn.Module):
             
         
     def forward(self, state):
-        if self.decoupled:
-            pi = self.activation(self.actor1(state))
-            value = self.activation(self.critic1(state))
-        else:
+        if self.shared_network:
             shared = self.activation(self.shared(state))
             pi = self.activation(self.actor1(shared))
             value = self.activation(self.critic1(shared))
+        else:
+            pi = self.activation(self.actor1(state))
+            value = self.activation(self.critic1(state))
+
 
             
         pi = self.activation(self.actor2(pi))

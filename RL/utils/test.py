@@ -17,7 +17,7 @@ def test(pkl_path, pth_path, env, attempts, display=False, video_dir=None):
     with open(pkl_path, 'rb') as f:
         logs = pickle.load(f)
         
-    env = TimeLimit(env, max_episode_steps=logs['params']['max_steps'])
+    env = TimeLimit(env, max_episode_steps=logs['params']['max_episode_steps'])
     if video_dir:
         if not os.path.exists(video_dir):
             os.makedirs(video_dir)
@@ -25,6 +25,7 @@ def test(pkl_path, pth_path, env, attempts, display=False, video_dir=None):
         
     if logs['agent'] == 'dqn':
         agent = DQNAgent(env.observation_space, env.action_space, **logs['params'])
+        agent.epsilon = 0
     elif logs['agent'] == 'a2c':
         agent = A2CAgent(env.observation_space, env.action_space, **logs['params'])
     elif logs['agent'] == 'td3':

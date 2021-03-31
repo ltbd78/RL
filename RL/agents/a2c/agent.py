@@ -41,7 +41,7 @@ class A2CAgent():
             self.activation = torch.tanh
         self.beta = params['beta']
         self.clip = params['clip']
-        self.decoupled = params['decoupled']
+        self.shared_network = params['shared_network']
         self.target_update_freq = params['target_update_freq'] # If None: MC-Learning; Else: TD-Learning
         
         self._build_agent()
@@ -49,7 +49,7 @@ class A2CAgent():
     def _build_agent(self):
         # Networks
         self.optim_steps = 0
-        self.network = ActorCriticNet(state_dim=self.state_dim, action_dim=self.action_dim, hidden_dim=self.hidden_dim, decoupled=self.decoupled, activation=self.activation, discrete=self.discrete).to(self.device)
+        self.network = ActorCriticNet(state_dim=self.state_dim, action_dim=self.action_dim, hidden_dim=self.hidden_dim, shared_network=self.shared_network, activation=self.activation, discrete=self.discrete).to(self.device)
         self.optim = torch.optim.Adam(self.network.parameters(), lr=self.learning_rate)
         if self.target_update_freq is not None:
             self.target_network = copy.deepcopy(self.network)
