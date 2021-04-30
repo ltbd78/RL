@@ -2,7 +2,6 @@ import gym
 from gym.wrappers import Monitor, TimeLimit
 import argparse
 import traceback
-import numpy as np
 import pickle
 import os
 
@@ -16,8 +15,10 @@ parser = argparse.ArgumentParser() # TODO
 def test(pkl_path, pth_path, env, attempts, display=False, video_dir=None): 
     with open(pkl_path, 'rb') as f:
         logs = pickle.load(f)
+    
+    if logs['params']['max_episode_steps'] is not None:
+        env = TimeLimit(env, max_episode_steps=logs['params']['max_episode_steps'])
         
-    env = TimeLimit(env, max_episode_steps=logs['params']['max_episode_steps'])
     if video_dir:
         if not os.path.exists(video_dir):
             os.makedirs(video_dir)
@@ -33,7 +34,6 @@ def test(pkl_path, pth_path, env, attempts, display=False, video_dir=None):
     elif logs['agent'] == 'random':
         agent = RandomAgent(env.observation_space, env.action_space, **logs['params'])
 
-    
     agent.load(pth_path)
         
     try:
@@ -43,24 +43,19 @@ def test(pkl_path, pth_path, env, attempts, display=False, video_dir=None):
             sum_reward = 0
             t = 0 
             done = False
-            
             while not done:
                 action = agent.get_action(state)
                 next_state, reward, done, _ = env.step(action)
                 state = next_state
                 sum_reward += reward
                 t += 1
-                
                 if display:
                     title = f'Attempt: {attempt+1} | Timestep: {t} | Reward: {reward} | Sum Reward: {sum_reward}'
                     render(env, title)
-
             rewards.append(sum_reward)
-                
-        print('rewards:', rewards)
-        print('mean(rewards) =', np.mean(rewards))
-        print('-'*13)
         env.close()
+        return rewards
     except Exception:
         traceback.print_exc()
+        breakpoint()
         env.close()

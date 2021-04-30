@@ -24,7 +24,8 @@ def train(agent_type, env, verbose=True, save_freq=50, save_dir='./', **params):
     elif agent_type == 'random':
         agent = RandomAgent(env.observation_space, env.action_space, **params)
     
-    env = TimeLimit(env, max_episode_steps=params['max_episode_steps'])
+    if params['max_episode_steps'] is not None:
+        env = TimeLimit(env, max_episode_steps=params['max_episode_steps'])
     log = {'agent':agent_type, 'params':params, 'episodes':[]}
     
     if save_dir[-1] != '/':
