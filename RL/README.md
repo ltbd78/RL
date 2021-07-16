@@ -20,8 +20,8 @@ Each RL agent should have it's own directory. Within each agent directory, there
 Below represents a generic layout for agents that uses a single network. The ??? denotes code to be filled out.
 
 ```
-from mars.agents.Foo.network import FooNet
-from mars.agents.utils.??? import ???
+from RL.agents.Foo.network import FooNet
+from RL.agents.utils.??? import ???
 
 class FooAgent():
     def __init__(self, observation_space, action_space, **params):

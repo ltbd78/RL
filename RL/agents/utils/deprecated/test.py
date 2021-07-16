@@ -1,7 +1,7 @@
 import gym
 
-from mars.agents.utils.replay_buffer import ReplayBuffer as rb_org
-from mars.agents.utils.deprecated.replay_buffer import ReplayBuffer as rb_dep
+from RL.agents.utils.replay_buffer import ReplayBuffer as rb_org
+from RL.agents.utils.deprecated.replay_buffer import ReplayBuffer as rb_dep
 
 cartpole_env = gym.make('CartPole-v0').unwrapped
 pendulum_env = gym.make('Pendulum-v0').unwrapped
