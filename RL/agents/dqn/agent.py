@@ -88,7 +88,7 @@ class DQNAgent:
 
         # let subscripts 0 := current and 1 := next
         # let Q' be the double network ("target_network") that lags behind Q
-        Q_s0_a0 = torch.gather(self.network(s0), 1, a0) # Q(s=s0, a=a0)
+        Q_predicted = torch.gather(self.network(s0), 1, a0) # Q(s=s0, a=a0)
         Q_s1 = self.network(s1) # Q(s=s1, a=.)
         a1 = Q_s1.argmax(dim=1).reshape(-1, 1) # a1 = argmax_a Q(s=s1, a=.) ; `a1` is always chosen by original Q
         if self.target_update_freq is not None:
@@ -96,9 +96,9 @@ class DQNAgent:
                 self.target_network.load_state_dict(self.network.state_dict())
             Q_s1 = self.target_network(s1) # Q'(s=s1, a=.) ; if using double, Q' will be used to eval `a1` chosen by original Q 
         
-        Q_expected = r + self.gamma*(1-d)*torch.gather(Q_s1, 1, a1) # Q_expected = r + gamma*(1-d)*{Q or Q'}(s=s1, a=a1)
+        Q_actual = r + self.gamma*(1-d)*torch.gather(Q_s1, 1, a1) # Q_actual = r + gamma*(1-d)*{Q or Q'}(s=s1, a=a1)
         
-        errors = (Q_expected - Q_s0_a0)
+        errors = (Q_actual - Q_predicted)
         
         if self.per: # TODO: results show it is not working as intended
             priorities = np.abs(errors.data.cpu().numpy()) + 1e-3 # check dtype
