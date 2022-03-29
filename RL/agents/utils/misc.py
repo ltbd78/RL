@@ -1,5 +1,7 @@
+import gym
 import numpy as np
-
+from RL.agents.random.agent import *
+from RL.agents import *
 
 def get_total_discounted_rewards(rewards, gamma):
     """
@@ -21,3 +23,32 @@ def get_total_discounted_rewards(rewards, gamma):
         total_discounted_rewards.append(tdr)
     
     return total_discounted_rewards[::-1]
+
+def sample(env, epochs=1000):
+    env = gym.make(env)
+    env._max_episode_steps = 50000
+    observation_space = env.observation_space
+    action_space = env.action_space
+    agent = RandomAgent(observation_space, action_space)
+    
+    distributions = []
+    
+    for e in range(epochs):
+        done = False
+        x = []
+        state = env.reset()
+        while not done:
+            action = agent.get_action(state)
+            next_state, reward, done, _ = env.step(action)
+            agent.remember(state, action, reward, next_state, done)
+            x.append(next_state)
+            state = next_state
+        distributions.append(np.mean(x, axis=0))
+
+    res = []
+    for i in range(len(distributions[0])):
+        temp = [item[i] for item in distributions]
+        temp.sort()
+        res.append(temp)
+        
+    return res

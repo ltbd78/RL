@@ -33,6 +33,8 @@ def test(pkl_path, pth_path, env, attempts, display=False, video_dir=None):
         agent = TD3Agent(env.observation_space, env.action_space, **logs['params'])
     elif logs['agent'] == 'random':
         agent = RandomAgent(env.observation_space, env.action_space, **logs['params'])
+    elif logs['agent'] == 'tabularq':
+        agent = TabularQ(env.observation_space, env.action_space, **logs['params'])
 
     agent.load(pth_path)
         

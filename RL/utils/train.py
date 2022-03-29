@@ -1,3 +1,6 @@
+import sys
+sys.path.append('..')
+
 import gym
 from gym.wrappers import TimeLimit
 import pickle
@@ -11,8 +14,8 @@ from RL.agents import *
 parser = argparse.ArgumentParser() # TODO
 
 
-def train(agent_type, env, verbose=True, save_freq=50, save_dir='./', **params):
-    if verbose:
+def train(agent_type, env, e_verbose=True, save_freq=50, save_dir='./', **params):
+    if e_verbose is not None:
         print(params)
     
     if agent_type == 'dqn':
@@ -23,7 +26,9 @@ def train(agent_type, env, verbose=True, save_freq=50, save_dir='./', **params):
         agent = TD3Agent(env.observation_space, env.action_space, **params)
     elif agent_type == 'random':
         agent = RandomAgent(env.observation_space, env.action_space, **params)
-    
+    elif agent_type == 'tabularq':
+        agent = TabularQ(env.observation_space, env.action_space, **params)
+        
     if params['max_episode_steps'] is not None:
         env = TimeLimit(env, max_episode_steps=params['max_episode_steps'])
     log = {'agent':agent_type, 'params':params, 'episodes':[]}
@@ -65,15 +70,16 @@ def train(agent_type, env, verbose=True, save_freq=50, save_dir='./', **params):
             ep += 1
             t_total += t_ep
             ep_info = {'episode':ep, 't_ep':t_ep, 't_total':t_total, 'sum_reward':sum_reward, 'optim_steps':agent.optim_steps, 'memory':len(agent.memory)}
+            
             log['episodes'].append(ep_info)
-            if verbose:
+            if e_verbose is not None and ep % e_verbose == 0:
                 print(ep_info)    
 
             if ep % save_freq == 0:                
                 agent.save(save_dir + params['file_name'] + '.pth')
                 with open(save_dir + params['file_name'] + '.pkl', 'wb') as f:
                     pickle.dump(log, f)
-                if verbose:
+                if e_verbose is not None and ep % e_verbose == 0 :
                     print('Episode ' + str(ep) + ': Saved model weights and log.')
         env.close()
         
