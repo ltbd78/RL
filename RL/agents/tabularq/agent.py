@@ -5,6 +5,10 @@ import pickle
 
 from RL.agents.utils.misc import *
 from RL.agents.random.agent import *
+"""
+implement parameters for user specified bins (range?)
+fix autobins a little?
+"""
 
 
 class TabularQ:
@@ -21,6 +25,7 @@ class TabularQ:
         self.gamma = params['gamma']
         self.learning_rate = params['learning_rate']
         
+        self.bin_range = params['bin_range'] # list of tuples (high, low)
         self.numbins = params['numbins']
         self.split = params['split'] # integer between 0 - 100
         self.resample = params['resample']
@@ -34,19 +39,27 @@ class TabularQ:
         self.bin_idx = []
         self.optim_steps = 0
         self.Qmatrix = np.random.uniform(low=-2, high=0, size=([self.numbins] * len(self.observation_space.high) + [self.action_space.n]))
-
-        idx = 0
-        for low, high in zip(self.observation_space.low, self.observation_space.high):
-            if (low < -1e10 or high > 1e10):
-                dis = sample(self.env)
-                low_split, high_split = 0 + self.split/2, 1 - self.split/2
-                low_idx, high_idx = int(len(dis[idx]) * low_split), int(len(dis[idx]) * high_split)
-                lo, hi = dis[idx][low_idx], dis[idx][high_idx]
-                self.bins.append(np.linspace(lo, hi, self.numbins))
-                self.bin_idx.append(idx)
-            else:
+        
+        # user specified bins
+        if (self.bin_range is not None):
+            for tuples in self.bin_range:
+                low, high = tuples
                 self.bins.append(np.linspace(low, high, self.numbins))
-            idx += 1
+        
+        # auto-generated bins
+        elif (self.split is not None):
+            idx = 0
+            for low, high in zip(self.observation_space.low, self.observation_space.high):
+                if (low < -1e10 or high > 1e10):
+                    dis = sample(self.env)
+                    low_split, high_split = 0 + self.split/2, 1 - self.split/2
+                    low_idx, high_idx = int(len(dis[idx]) * low_split), int(len(dis[idx]) * high_split)
+                    lo, hi = dis[idx][low_idx], dis[idx][high_idx]
+                    self.bins.append(np.linspace(lo, hi, self.numbins))
+                    self.bin_idx.append(idx)
+                else:
+                    self.bins.append(np.linspace(low, high, self.numbins))
+                idx += 1
         
     def get_action(self, state):
         state = self.get_discrete_state(state, self.bins, len(self.observation_space.high))
