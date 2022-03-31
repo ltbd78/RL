@@ -87,8 +87,10 @@ class TabularQ:
                 self.Qmatrix[state + (action, )] += self.learning_rate * (reward + self.gamma * np.max(self.Qmatrix[next_state]) - self.Qmatrix[state + (action, )])
             
         self.epsilon = max(self.epsilon_min, self.epsilon * self.epsilon_decay)
-        if self.lr_min is not None and self.lr_decay is not None:
+        
+        if (self.lr_min and self.lr_decay) is not None:
             self.learning_rate = max(self.lr_min, self.lr_decay * self.learning_rate)
+            
         self.optim_steps += 1
         self.memory = []
         
