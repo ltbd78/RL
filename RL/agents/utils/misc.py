@@ -24,7 +24,7 @@ def get_total_discounted_rewards(rewards, gamma):
     
     return total_discounted_rewards[::-1]
 
-def sample(env, epochs=1000):
+def sample(env, epochs=5000):
     env = gym.make(env)
     env._max_episode_steps = 50000
     observation_space = env.observation_space
