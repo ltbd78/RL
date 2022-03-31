@@ -5,10 +5,7 @@ import pickle
 
 from RL.agents.utils.misc import *
 from RL.agents.random.agent import *
-"""
-implement parameters for user specified bins (range?)
-fix autobins a little?
-"""
+
 
 class TabularQ:
     def __init__(self, observation_space, action_space, **params):
@@ -23,6 +20,8 @@ class TabularQ:
         self.epsilon_min = params['epsilon_min']
         self.gamma = params['gamma']
         self.learning_rate = params['learning_rate']
+        self.lr_decay = params['lr_decay']
+        self.lr_min = params['lr_min']
         
         self.bin_range = params['bin_range'] # list of tuples (high, low)
         self.numbins = params['numbins']
@@ -48,7 +47,7 @@ class TabularQ:
             idx = 0
             for low, high in zip(self.observation_space.low, self.observation_space.high):
                 if (low < -1e10 or high > 1e10):
-                    dis = sample(self.env)
+                    dis = sample(self.env) # optional parameter epochs
                     if self.split != 0:
                         low_split, high_split = 0 + self.split/2, 1 - self.split/2
                         low_idx, high_idx = int(len(dis[idx]) * low_split), int(len(dis[idx]) * high_split)
@@ -88,6 +87,8 @@ class TabularQ:
                 self.Qmatrix[state + (action, )] += self.learning_rate * (reward + self.gamma * np.max(self.Qmatrix[next_state]) - self.Qmatrix[state + (action, )])
             
         self.epsilon = max(self.epsilon_min, self.epsilon * self.epsilon_decay)
+        if self.lr_min is not None and self.lr_decay is not None:
+            self.learning_rate = max(self.lr_min, self.lr_decay * self.learning_rate)
         self.optim_steps += 1
         self.memory = []
         
