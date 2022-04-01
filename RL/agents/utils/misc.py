@@ -26,7 +26,6 @@ def get_total_discounted_rewards(rewards, gamma):
 
 def sample(env, epochs=5000):
     env = gym.make(env)
-    env._max_episode_steps = 50000
     observation_space = env.observation_space
     action_space = env.action_space
     agent = RandomAgent(observation_space, action_space)
