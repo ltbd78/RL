@@ -107,10 +107,10 @@ class TabularQ:
         self.memory = []
         
     def get_discrete_state(self, state, bins, observation_size):
-        stateIndex = []
+        state_idx = []
         for i in range(observation_size):
-            stateIndex.append(np.digitize(state[i], bins[i]) - 1) # -1 will turn bin into index
-        return tuple(stateIndex)
+            state_idx.append(np.digitize(state[i], bins[i]) - 1) # -1 will turn bin into index
+        return tuple(state_idx)
     
     def save(self, filename):
         with open(filename, 'wb') as f:
