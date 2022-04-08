@@ -70,7 +70,6 @@ def train(agent_type, env, e_verbose=True, save_freq=50, save_dir='./', **params
             ep += 1
             t_total += t_ep
             ep_info = {'episode':ep, 't_ep':t_ep, 't_total':t_total, 'sum_reward':sum_reward, 'optim_steps':agent.optim_steps, 'memory':len(agent.memory)}
-            
             log['episodes'].append(ep_info)
             if e_verbose is not None and ep % e_verbose == 0:
                 print(ep_info)    
