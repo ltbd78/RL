@@ -37,7 +37,7 @@ class TabularQ:
         self.Qmatrix = np.random.uniform(low=-2, high=0, size=([self.numbins] * len(self.observation_space.high) + [self.action_space.n]))
         
         # user specified bins
-        if self.bin_range:
+        if self.bin_range is not None:
             for tuples in self.bin_range:
                 low, high = tuples
                 self.bins.append(np.linspace(low, high, self.numbins))
