@@ -38,8 +38,7 @@ class TabularQ:
         
         # user specified bins
         if self.bin_range is not None:
-            for tuples in self.bin_range:
-                low, high = tuples
+            for low, high in self.bin_range:
                 self.bins.append(np.linspace(low, high, self.numbins))
         
         # auto-generated bins
