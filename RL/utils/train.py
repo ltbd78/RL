@@ -1,6 +1,3 @@
-import sys
-sys.path.append('..')
-
 import gym
 from gym.wrappers import TimeLimit
 import pickle
