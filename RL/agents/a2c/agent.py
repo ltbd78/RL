@@ -1,5 +1,5 @@
 import numpy as np
-import gym
+import gymnasium as gym
 import copy
 import torch
 import torch.nn.functional as F
@@ -9,7 +9,7 @@ from RL.agents.utils.misc import *
 
 
 class A2CAgent():
-    def __init__(self, observation_space, action_space, **params):       
+    def __init__(self, observation_space, action_space, **params):
         # Environment Params
         self.observation_space = observation_space
         self.action_space = action_space
@@ -21,7 +21,7 @@ class A2CAgent():
         else:
             self.discrete = False
             self.action_dim = action_space.shape[0]
-        
+
         # Agent Common Params (ordered by preference)
         self.online = False
         self.gamma = params['gamma'] # Discount factor
@@ -32,7 +32,7 @@ class A2CAgent():
             self.dtype = torch.float32
         if params['dtype'] == 'float64':
             self.dtype = torch.float64
-           
+
         # Agent Specific Params (ordered alphabetically)
         activation = params['activation']
         if activation == 'relu':
@@ -43,9 +43,9 @@ class A2CAgent():
         self.clip = params['clip']
         self.shared_network = params['shared_network']
         self.target_update_freq = params['target_update_freq'] # If None: MC-Learning; Else: TD-Learning
-        
+
         self._build_agent()
-        
+
     def _build_agent(self):
         # Networks
         self.optim_steps = 0
@@ -53,23 +53,23 @@ class A2CAgent():
         self.optim = torch.optim.Adam(self.network.parameters(), lr=self.learning_rate)
         if self.target_update_freq is not None:
             self.target_network = copy.deepcopy(self.network)
-        
+
         # Memory
         self.memory = [] # a "trajectory", not a "replay buffer"; experiences are reset after episode
-   
+
     def remember(self, state, action, reward, next_state, done):
         self.memory.append([state, action, reward, next_state, done])
-    
-    def get_action(self, state): 
+
+    def get_action(self, state):
         state = torch.tensor(state, dtype=self.dtype, device=self.device)
         pi, value = self.network(state)
         action = pi.sample().data.cpu().numpy() # TODO
         if self.discrete:
             action = action.item()
         else:
-            action = np.clip(action, self.action_space.low, self.action_space.high)   
+            action = np.clip(action, self.action_space.low, self.action_space.high)
         return action
-    
+
     def learn(self):
         """
         Notes:
@@ -129,7 +129,7 @@ class A2CAgent():
         self.optim.step()
 
         self.optim_steps += 1
-    
+
     def save(self, path):
         torch.save({'network': self.network.state_dict(),
                     'optim': self.optim.state_dict()},
@@ -137,7 +137,7 @@ class A2CAgent():
 
     def load(self, path):
         checkpoint = torch.load(path)
-        
+
         self.network.load_state_dict(checkpoint['network'])
         self.optim.load_state_dict(checkpoint['optim'])
         if self.target_update_freq is not None:

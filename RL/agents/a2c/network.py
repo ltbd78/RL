@@ -9,7 +9,7 @@ class ActorCriticNet(nn.Module):
         self.shared_network = shared_network
         self.activation = activation
         self.discrete = discrete
-        
+
         if self.shared_network:
             self.shared = nn.Linear(state_dim, hidden_dim)
             self.actor1 = nn.Linear(hidden_dim, hidden_dim)
@@ -18,19 +18,19 @@ class ActorCriticNet(nn.Module):
             self.actor1 = nn.Linear(state_dim, hidden_dim)
             self.critic1 = nn.Linear(state_dim, hidden_dim)
 
-            
+
         self.actor2 = nn.Linear(hidden_dim, hidden_dim)
         self.actor3 = nn.Linear(hidden_dim, action_dim)
 
         self.critic2 = nn.Linear(hidden_dim, hidden_dim)
         self.critic3 = nn.Linear(hidden_dim, 1)
-        
+
         if not self.discrete:
 #             logstds_param = nn.Parameter(torch.zeros(action_dim)) #torch.full((self.model(action_dim,), 0.1)))
 #             self.register_parameter("logstds", logstds_param)
             self.log_stds = nn.Parameter(torch.zeros(action_dim))
-            
-        
+
+
     def forward(self, state):
         if self.shared_network:
             shared = self.activation(self.shared(state))
@@ -41,7 +41,7 @@ class ActorCriticNet(nn.Module):
             value = self.activation(self.critic1(state))
 
 
-            
+
         pi = self.activation(self.actor2(pi))
         pi = self.actor3(pi)
         if self.discrete:

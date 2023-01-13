@@ -14,25 +14,25 @@ class ReplayMemory(): # TODO: swap deque with binary heap / sum tree
         self.buffer = deque(maxlen=self.maxlen)
         if self.per:
             self.priorities = deque(maxlen=self.maxlen)
-        
+
     def __len__(self):
         return len(self.buffer)
-        
+
     def add(self, experience):
         self.buffer.append(experience)
         if self.per:
             self.priorities.append(max(self.priorities, default=1))
-        
+
     def _get_probabilities(self, damping):
         scaled_priorities = np.array(self.priorities) ** damping
         sample_probabilities = scaled_priorities / sum(scaled_priorities)
         return sample_probabilities
-    
+
     def _get_importances(self, probabilities):
         importances = 1/len(self.buffer) * 1/probabilities
         importances_normalized = importances / max(importances)
         return importances_normalized
-        
+
     def sample(self, batch_size, damping=1.0):
         if self.per:
             sample_size = min(len(self.buffer), batch_size)

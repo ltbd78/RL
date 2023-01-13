@@ -1,5 +1,5 @@
 import numpy as np
-import gym
+import gymnasium as gym
 import copy
 import torch
 import random
@@ -17,7 +17,7 @@ class DQNAgent:
         self.state_dim = observation_space.shape[0]
         assert isinstance(action_space, gym.spaces.Discrete)
         self.action_dim = action_space.n
-        
+
         # Agent Common Params (ordered by preference)
         self.online = params['online']
         self.gamma = params['gamma'] # Discount factor
@@ -28,7 +28,7 @@ class DQNAgent:
             self.dtype = torch.float32
         if params['dtype'] == 'float64':
             self.dtype = torch.float64
-        
+
         # Agent Specific Params (ordered alphabetically)
         self.batch_size = params['batch_size'] # size to sample from memory
         self.clip = params['clip']
@@ -45,7 +45,7 @@ class DQNAgent:
         self.target_update_freq = params['target_update_freq'] # double network
 
         self._build_agent()
-  
+
     def _build_agent(self):
         # Networks
         self.optim_steps = 0
@@ -53,7 +53,7 @@ class DQNAgent:
         self.optim = torch.optim.Adam(self.network.parameters(), lr=self.learning_rate)
         if self.target_update_freq is not None:
             self.target_network = copy.deepcopy(self.network)
-        
+
         # Memory
         if self.per:
             self.memory = PrioritizedReplayBuffer(size=self.memory_maxlen, alpha=self.memory_alpha)
@@ -62,7 +62,7 @@ class DQNAgent:
 
     def remember(self, state, action, reward, next_state, done):
         self.memory.add(state, action, reward, next_state, done)
-        
+
     def get_action(self, state):
         if random.random() <= self.epsilon:
             action = int(random.random()*self.action_dim) # random action
@@ -71,7 +71,7 @@ class DQNAgent:
             act_values = self.network(state)
             action = np.argmax(act_values.data.cpu().numpy()) # predicted action
         return action
-    
+
     def learn(self):
         n = self.batch_size
         if self.per:
@@ -94,31 +94,31 @@ class DQNAgent:
         if self.target_update_freq is not None:
             if self.optim_steps % self.target_update_freq == 0:
                 self.target_network.load_state_dict(self.network.state_dict())
-            Q_s1 = self.target_network(s1) # Q'(s=s1, a=.) ; if using double, Q' will be used to eval `a1` chosen by original Q 
-        
+            Q_s1 = self.target_network(s1) # Q'(s=s1, a=.) ; if using double, Q' will be used to eval `a1` chosen by original Q
+
         Q_actual = r + self.gamma*(1-d)*torch.gather(Q_s1, 1, a1) # Q_actual = r + gamma*(1-d)*{Q or Q'}(s=s1, a=a1)
-        
+
         errors = (Q_actual - Q_predicted)
-        
+
         if self.per: # TODO: results show it is not working as intended
             priorities = np.abs(errors.data.cpu().numpy()) + 1e-3 # check dtype
             self.memory.update_priorities(idx, priorities)
             loss = (errors.pow(2)*weights).mean()
         else:
             loss = errors.pow(2).mean()
-        
+
         self.optim.zero_grad()
         loss.backward()
-        
+
         if self.clip:
             for param in self.network.parameters():
                 param.grad.data.clamp_(-1, 1)
-                
+
         self.optim.step()
-            
+
         if self.epsilon > self.epsilon_min:
             self.epsilon = max(self.epsilon*self.epsilon_decay, self.epsilon_min)
-        
+
         self.optim_steps += 1
 
     def save(self, path):
@@ -128,10 +128,10 @@ class DQNAgent:
 
     def load(self, path):
         checkpoint = torch.load(path)
-        
+
         self.network.load_state_dict(checkpoint['network'])
         self.optim.load_state_dict(checkpoint['optim'])
         if self.target_update_freq is not None:
             self.target_network = copy.deepcopy(self.network)
-        
+
         self.epsilon = .01 # for testing

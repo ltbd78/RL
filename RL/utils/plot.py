@@ -16,7 +16,7 @@ def get_ma(x, ma_len):
 def plot(pkl_dir, ep_avg, ma_len, verbose, lim=None):
     fnames = sorted(glob(pkl_dir + '*.pkl'))
     n = len(fnames)
-    
+
     try:
         a = max(2, int(np.ceil(np.sqrt(n))))
         fig, ax = plt.subplots(a, a, figsize=(20, 10))
@@ -48,14 +48,14 @@ def plot(pkl_dir, ep_avg, ma_len, verbose, lim=None):
                 if lim is not None:
                     min_r = lim[0]
                     max_r = lim[1]
-                
+
                 ma = get_ma(rs, ma_len)
 
                 if ep_avg:
                     y_lab = 'Avg Reward'
                 else:
                     y_lab = 'Sum Reward'
-                
+
                 ax[i, j].scatter(range(len(rs)), rs, s=1)
                 ax[i, j].plot(range(ma_len, len(rs)), ma, color='red', label=str(ma_len)+'-MA')
                 ax[i, j].set_title(fnames[k].split('/')[-1])

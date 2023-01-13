@@ -12,7 +12,7 @@ class ReplayBuffer():
         self.reward = np.zeros((maxlen, 1))
         self.next_state = np.zeros((maxlen, state_dim))
         self.done = np.zeros((maxlen, 1))
-    
+
     def __len__(self):
         return self.size
 

@@ -11,7 +11,7 @@ class Actor(nn.Module):
         self.l1 = nn.Linear(state_dim, hidden_dim)
         self.l2 = nn.Linear(hidden_dim, hidden_dim)
         self.l3 = nn.Linear(hidden_dim, action_dim)
-        
+
         # TODO: individualize scale/shift for varied low/high arrays
         self.location = (max(action_space.high) + min(action_space.low)) / 2
         self.scale = (max(action_space.high) - min(action_space.low)) / 2
@@ -46,7 +46,7 @@ class Critic(nn.Module):
         q2 = F.relu(self.l4(sa))
         q2 = F.relu(self.l5(q2))
         q2 = self.l6(q2)
-        
+
         return q1, q2
 
 
@@ -56,5 +56,5 @@ class Critic(nn.Module):
         q1 = F.relu(self.l1(sa))
         q1 = F.relu(self.l2(q1))
         q1 = self.l3(q1)
-        
+
         return q1

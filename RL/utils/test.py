@@ -1,5 +1,5 @@
-import gym
-from gym.wrappers import Monitor, TimeLimit
+import gymnasium as gym
+from gymnasium.wrappers import RecordVideo, TimeLimit
 import argparse
 import traceback
 import pickle
@@ -12,18 +12,18 @@ from RL.agents import *
 parser = argparse.ArgumentParser() # TODO
 
 
-def test(pkl_path, pth_path, env, attempts, display=False, video_dir=None): 
+def test(pkl_path, pth_path, env, attempts, display=False, video_dir=None):
     with open(pkl_path, 'rb') as f:
         logs = pickle.load(f)
-    
+
     if logs['params']['max_episode_steps'] is not None:
         env = TimeLimit(env, max_episode_steps=logs['params']['max_episode_steps'])
-        
+
     if video_dir:
         if not os.path.exists(video_dir):
             os.makedirs(video_dir)
-        env = Monitor(env, video_dir, force=True)
-        
+        env = RecordVideo(env, video_dir, force=True)
+
     if logs['agent'] == 'dqn':
         agent = DQNAgent(env.observation_space, env.action_space, **logs['params'])
         agent.epsilon = 0
@@ -35,13 +35,13 @@ def test(pkl_path, pth_path, env, attempts, display=False, video_dir=None):
         agent = RandomAgent(env.observation_space, env.action_space, **logs['params'])
 
     agent.load(pth_path)
-        
+
     try:
         rewards = []
         for attempt in range(attempts):
             state = env.reset()
             sum_reward = 0
-            t = 0 
+            t = 0
             done = False
             while not done:
                 action = agent.get_action(state)

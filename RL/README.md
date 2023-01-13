@@ -1,18 +1,18 @@
 # Project Structure
 
-- agents/  
-  - agent_1/  
-  - agent_2/  
-  - ...  
-  - agent_n/  
-    - agent.py  
-    - network.py  
-  - utils/  
-    - train.py  
-    - test.py  
-    - ...  
+- agents/
+  - agent_1/
+  - agent_2/
+  - ...
+  - agent_n/
+    - agent.py
+    - network.py
+  - utils/
+    - train.py
+    - test.py
+    - ...
 
-Each RL agent should have it's own directory. Within each agent directory, there should be a `network.py` and `agent.py`; all else  should be placed in utils. `network.py` contains deep neural network models defined as subclasses of `torch.nn.Module`. `agent.py` contains agent learning and processing functions that is required in `train.py` (more details defined below). This is an optimal architectural framework that allows for versatility in training various agent modules on different environments. 
+Each RL agent should have it's own directory. Within each agent directory, there should be a `network.py` and `agent.py`; all else  should be placed in utils. `network.py` contains deep neural network models defined as subclasses of `torch.nn.Module`. `agent.py` contains agent learning and processing functions that is required in `train.py` (more details defined below). This is an optimal architectural framework that allows for versatility in training various agent modules on different environments.
 
 
 # `agent.py` Structure
@@ -32,7 +32,7 @@ class FooAgent():
         self.state_dim = ???
         assert isinstance(action_space, gym.spaces.???)
         self.action_dim = ???
-        
+
         # Agent Common Params (ordered by preference)
         self.online = ???
         self.gamma = params['gamma'] # Discount factor
@@ -46,21 +46,21 @@ class FooAgent():
 
         # Agent Specific Params (ordered alphabetically)
         ???
-        
-        self._build_agent()     
-        
+
+        self._build_agent()
+
     def _build_agent(self):
         # Networks
         self.optim_steps = 0
         self.network = FooNet(self.state_dim, self.action_dim, self.hidden_dim, ???).to(self.device)
         self.optim = ???
-        
+
         # Memory
         self.memory = ???
-    
+
     def remember(self, state, action, reward, next_state, done):
         self.memory.???
-    
+
     def get_action(self, state):
         state = torch.tensor(???)
         action = self.network(state)
@@ -76,7 +76,7 @@ class FooAgent():
 
     def load(self, filename):
         ???
-       
+
 ```
 
 Note:

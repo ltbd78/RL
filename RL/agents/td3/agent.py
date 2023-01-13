@@ -1,7 +1,7 @@
 # Inspired by https://github.com/sfujim/TD3
 
 import numpy as np
-import gym
+import gymnasium as gym
 import copy
 import torch
 
@@ -17,8 +17,8 @@ class TD3Agent():
         assert isinstance(observation_space, gym.spaces.Box)
         self.state_dim = observation_space.shape[0]
         assert isinstance(action_space, gym.spaces.Box)
-        self.action_dim = action_space.shape[0] 
-        
+        self.action_dim = action_space.shape[0]
+
         # Agent Common Params (ordered by preference)
         self.online = True
         self.gamma = params['gamma'] # Discount factor
@@ -38,9 +38,9 @@ class TD3Agent():
         self.policy_freq = params['policy_freq'] # Frequency of delayed policy updates
         self.policy_noise = params['policy_noise'] # Noise added to target policy during critic update
         self.tau = params['tau'] # Target network update rate
-        
+
         self._build_agent()
-        
+
     def _build_agent(self):
         # Networks
         self.optim_steps = 0
@@ -50,13 +50,13 @@ class TD3Agent():
         self.critic = Critic(self.state_dim, self.action_dim, self.hidden_dim).to(self.device)
         self.critic_target = copy.deepcopy(self.critic)
         self.critic_optimizer = torch.optim.Adam(self.critic.parameters(), lr=self.learning_rate)
-        
+
         # Memory
         self.memory = ReplayBuffer(size=self.memory_maxlen)
-    
+
     def remember(self, state, action, reward, next_state, done):
         self.memory.add(state, action, reward, next_state, done)
-    
+
     def get_action(self, state):
         state = torch.tensor(state.reshape(1, -1), dtype=self.dtype, device=self.device)
         action = self.actor(state).cpu().data.numpy().flatten()
@@ -66,9 +66,9 @@ class TD3Agent():
         return clipped_noisy_action
 
     def learn(self):
-        # Sample replay buffer 
+        # Sample replay buffer
         state, action, reward, next_state, done = self.memory.sample(self.batch_size)
-        
+
         state = torch.tensor(state, dtype=self.dtype, device=self.device)
         action = torch.tensor(action, dtype=self.dtype, device=self.device)
         reward = torch.tensor(reward, dtype=self.dtype, device=self.device).reshape(-1, 1)
@@ -78,7 +78,7 @@ class TD3Agent():
         with torch.no_grad():
             # Select action according to policy and add clipped noise
             noise = (torch.randn_like(action) * self.policy_noise).clamp(-self.noise_clip, self.noise_clip)
-            
+
             # Clip action to [action_space.low, action_space.high]
             next_action = (self.actor_target(next_state) + noise)
             low = torch.tensor(self.action_space.low, dtype=self.dtype, device=self.device)
@@ -107,8 +107,8 @@ class TD3Agent():
 
             # Compute actor losse
             actor_loss = -self.critic.Q1(state, self.actor(state)).mean()
-            
-            # Optimize the actor 
+
+            # Optimize the actor
             self.actor_optimizer.zero_grad()
             actor_loss.backward()
             self.actor_optimizer.step()
@@ -119,7 +119,7 @@ class TD3Agent():
 
             for param, target_param in zip(self.actor.parameters(), self.actor_target.parameters()):
                 target_param.data.copy_(self.tau * param.data + (1 - self.tau) * target_param.data)
-        
+
         self.optim_steps += 1
 
     def save(self, path):
@@ -131,7 +131,7 @@ class TD3Agent():
 
     def load(self, path):
         checkpoint = torch.load(path)
-        
+
         self.critic.load_state_dict(checkpoint['critic'])
         self.critic_optimizer.load_state_dict(checkpoint['critic_optim'])
         self.critic_target = copy.deepcopy(self.critic)
@@ -139,4 +139,3 @@ class TD3Agent():
         self.actor.load_state_dict(checkpoint['actor'])
         self.actor_optimizer.load_state_dict(checkpoint['actor_optim'])
         self.actor_target = copy.deepcopy(self.actor)
-        
