@@ -19,5 +19,4 @@ def get_total_discounted_rewards(rewards, gamma):
     for reward in rewards[::-1]:
         tdr = reward + tdr * gamma
         total_discounted_rewards.append(tdr)
-
     return total_discounted_rewards[::-1]

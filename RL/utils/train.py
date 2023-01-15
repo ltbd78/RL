@@ -1,5 +1,3 @@
-import gymnasium
-from gymnasium.wrappers import TimeLimit
 import pickle
 import argparse
 import traceback
@@ -8,24 +6,19 @@ import os
 from RL.agents import *
 
 
-parser = argparse.ArgumentParser() # TODO
-
+AGENTS = {
+    'random': RandomAgent,
+    'dqn': DQNAgent,
+    'a2c': A2CAgent,
+    'td3': TD3Agent,
+}
 
 def train(agent_type, env, verbose=True, save_freq=50, save_dir='./', **params):
     if verbose:
         print(params)
 
-    if agent_type == 'dqn':
-        agent = DQNAgent(env.observation_space, env.action_space, **params)
-    elif agent_type == 'a2c':
-        agent = A2CAgent(env.observation_space, env.action_space, **params)
-    elif agent_type == 'td3':
-        agent = TD3Agent(env.observation_space, env.action_space, **params)
-    elif agent_type == 'random':
-        agent = RandomAgent(env.observation_space, env.action_space, **params)
+    agent = AGENTS[agent_type](env.observation_space, env.action_space, **params)
 
-    if params['max_episode_steps'] is not None:
-        env = TimeLimit(env, max_episode_steps=params['max_episode_steps'])
     log = {'agent':agent_type, 'params':params, 'episodes':[]}
 
     if save_dir[-1] != '/':
@@ -37,7 +30,7 @@ def train(agent_type, env, verbose=True, save_freq=50, save_dir='./', **params):
         ep = 0
         t_total = 0
         while t_total < params['max_steps']:
-            state, _ = env.reset()
+            state, info = env.reset()
             sum_reward = 0
             t_ep = 0
             done = False
@@ -48,7 +41,8 @@ def train(agent_type, env, verbose=True, save_freq=50, save_dir='./', **params):
                 else:
                     action = env.action_space.sample()
 
-                next_state, reward, done, _, _ = env.step(action)
+                next_state, reward, terminated, truncated, info = env.step(action)
+                done = terminated or truncated
                 agent.remember(state, action, reward, next_state, done)
                 state = next_state
                 sum_reward += reward
@@ -80,8 +74,3 @@ def train(agent_type, env, verbose=True, save_freq=50, save_dir='./', **params):
     except Exception:
         traceback.print_exc()
         breakpoint()
-
-if __name__ == '__main__':
-    args = parser.parse_args()
-    env = gym.make(args.env_name).unwrapped
-    # train(...) # TODO

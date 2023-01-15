@@ -11,7 +11,7 @@ from IPython import display
 def render(env, title):
     plt.figure(0)
     plt.clf()
-    plt.imshow(env.render(mode='rgb_array'))
+    plt.imshow(env.render())
     plt.title(title)
     plt.axis('off')
     display.display(plt.gcf())

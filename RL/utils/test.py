@@ -16,13 +16,10 @@ def test(pkl_path, pth_path, env, attempts, display=False, video_dir=None):
     with open(pkl_path, 'rb') as f:
         logs = pickle.load(f)
 
-    if logs['params']['max_episode_steps'] is not None:
-        env = TimeLimit(env, max_episode_steps=logs['params']['max_episode_steps'])
-
     if video_dir:
         if not os.path.exists(video_dir):
             os.makedirs(video_dir)
-        env = RecordVideo(env, video_dir, force=True)
+        env = RecordVideo(env, video_dir)
 
     if logs['agent'] == 'dqn':
         agent = DQNAgent(env.observation_space, env.action_space, **logs['params'])
@@ -39,13 +36,14 @@ def test(pkl_path, pth_path, env, attempts, display=False, video_dir=None):
     try:
         rewards = []
         for attempt in range(attempts):
-            state = env.reset()
+            state, info = env.reset()
             sum_reward = 0
             t = 0
             done = False
             while not done:
                 action = agent.get_action(state)
-                next_state, reward, done, _ = env.step(action)
+                next_state, reward, terminated, truncated, info = env.step(action)
+                done = terminated or truncated
                 state = next_state
                 sum_reward += reward
                 t += 1
